@@ -2,7 +2,7 @@ use rusqlite::Connection;
 use serde_json::{json, Value};
 use std::sync::Mutex;
 
-use crate::llm::{self, LlmClient, NormMessage, ToolDef};
+use crate::llm::{LlmClient, NormMessage, ToolDef};
 use crate::tools;
 
 /// System prompt for the orchestrating LLM.
@@ -22,7 +22,8 @@ fn tool_defs() -> Vec<ToolDef> {
     vec![
         ToolDef {
             name: "welcome".into(),
-            description: "Greet the user by name and remind them to call 911 in emergencies.".into(),
+            description: "Greet the user by name and remind them to call 911 in emergencies."
+                .into(),
             input_schema: json!({
                 "type": "object",
                 "properties": { "name": { "type": "string" } },
@@ -227,7 +228,11 @@ mod tests {
     #[test]
     fn keyword_schedule_creates_appointment() {
         let conn = db::init_db(":memory:").unwrap();
-        let r = keyword_route(&conn, "Alice", "please schedule a dental appointment on 2026-07-08 09:00");
+        let r = keyword_route(
+            &conn,
+            "Alice",
+            "please schedule a dental appointment on 2026-07-08 09:00",
+        );
         assert!(r.contains("Confirmation"), "{}", r);
         let cur = keyword_route(&conn, "Alice", "my current appointment");
         assert!(cur.contains("Dental"), "{}", cur);
@@ -246,11 +251,10 @@ mod tests {
             pick_time("book on 2026-07-08 09:00 please").as_deref(),
             Some("2026-07-08 09:00")
         );
-        assert_eq!(pick_time("see you 2026-07-08").as_deref(), Some("2026-07-08"));
+        assert_eq!(
+            pick_time("see you 2026-07-08").as_deref(),
+            Some("2026-07-08")
+        );
         assert!(pick_time("no date here").is_none());
     }
 }
-
-// Silence unused-import warning for `llm` in builds where only the keyword router runs.
-#[allow(unused_imports)]
-use llm as _;
