@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Appointment Scheduler Agent</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --accent: #38bdf8;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .app {
+      width: 100%;
+      max-width: 640px;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    header {
+      padding: 18px 20px;
+      background: var(--panel);
+      border-bottom: 1px solid #334155;
+    }
+    header h1 { margin: 0; font-size: 18px; }
+    header p { margin: 4px 0 0; font-size: 12px; color: var(--muted); }
+    #transcript {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .msg { max-width: 80%; padding: 10px 14px; border-radius: 14px; line-height: 1.4; white-space: pre-wrap; }
+    .user { align-self: flex-end; background: var(--accent); color: #0f172a; }
+    .bot { align-self: flex-start; background: var(--panel); }
+    .bot.system { font-size: 12px; color: var(--muted); background: transparent; }
+    form { display: flex; gap: 8px; padding: 16px; background: var(--panel); border-top: 1px solid #334155; }
+    input, button { font-size: 14px; border: none; border-radius: 8px; padding: 10px 12px; }
+    #name { width: 110px; background: #0f172a; color: var(--text); }
+    #message { flex: 1; background: #0f172a; color: var(--text); }
+    button { background: var(--accent); color: #0f172a; font-weight: 600; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: default; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Appointment Scheduler Agent</h1>
+      <p>Sonnet 5 powered router · SQLite · Rust</p>
+    </header>
+    <div id="transcript"></div>
+    <form id="chat">
+      <input id="name" placeholder="Your name" value="admin" />
+      <input id="message" placeholder="Type a message..." autocomplete="off" />
+      <button id="send" type="submit">Send</button>
+    </form>
+  </div>
+
+  <script>
+    const transcript = document.getElementById("transcript");
+    const form = document.getElementById("chat");
+    const nameEl = document.getElementById("name");
+    const msgEl = document.getElementById("message");
+    const sendBtn = document.getElementById("send");
+
+    function add(text, cls) {
+      const div = document.createElement("div");
+      div.className = "msg " + cls;
+      div.textContent = text;
+      transcript.appendChild(div);
+      transcript.scrollTop = transcript.scrollHeight;
+    }
+
+    add("Hello! Tell me your name and ask about appointments. For emergencies, call 911.", "bot system");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const user_name = nameEl.value.trim();
+      const message = msgEl.value.trim();
+      if (!message) return;
+      add(message, "user");
+      msgEl.value = "";
+      sendBtn.disabled = true;
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_name, message })
+        });
+        const data = await res.json();
+        add(data.reply || "(no reply)", "bot");
+      } catch (err) {
+        add("Error: " + err.message, "bot");
+      } finally {
+        sendBtn.disabled = false;
+        msgEl.focus();
+      }
+    });
+  </script>
+</body>
+</html>
