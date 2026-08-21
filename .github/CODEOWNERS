@@ -1,0 +1,5 @@
+# Default codeowners for the repository.
+*       @KarthikNatarajanRepo
+
+# GitHub Actions / CI workflows require explicit review.
+/.github/   @KarthikNatarajanRepo

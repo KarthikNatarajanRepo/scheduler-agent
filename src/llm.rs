@@ -146,7 +146,18 @@ impl LlmClient {
                 base_url,
                 api_key,
                 model,
-            } => openai_chat(http, base_url, api_key.as_deref(), model, system, convo, tools).await,
+            } => {
+                openai_chat(
+                    http,
+                    base_url,
+                    api_key.as_deref(),
+                    model,
+                    system,
+                    convo,
+                    tools,
+                )
+                .await
+            }
         }
     }
 }
@@ -261,8 +272,16 @@ async fn anthropic_chat(
                     }
                 }
                 Some("tool_use") => {
-                    let id = b.get("id").and_then(|v| v.as_str()).unwrap_or("").to_string();
-                    let name = b.get("name").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                    let id = b
+                        .get("id")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("")
+                        .to_string();
+                    let name = b
+                        .get("name")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("")
+                        .to_string();
                     let input = b.get("input").cloned().unwrap_or(Value::Null);
                     tool_calls.push(ToolCall {
                         id,

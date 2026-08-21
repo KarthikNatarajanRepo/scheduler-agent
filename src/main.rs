@@ -38,8 +38,7 @@ struct ChatResponse {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let db_path =
-        std::env::var("SCHEDULER_DB").unwrap_or_else(|_| "scheduler.db".to_string());
+    let db_path = std::env::var("SCHEDULER_DB").unwrap_or_else(|_| "scheduler.db".to_string());
     let conn = db::init_db(&db_path)?;
     let llm = llm::LlmClient::new();
     let mode = match &llm {
@@ -84,6 +83,12 @@ async fn chat(
     State(state): State<AppState>,
     Json(req): Json<ChatRequest>,
 ) -> (StatusCode, Json<ChatResponse>) {
-    let reply = agents::route_and_handle(&state.inner.db, state.inner.llm.as_ref(), &req.user_name, &req.message).await;
+    let reply = agents::route_and_handle(
+        &state.inner.db,
+        state.inner.llm.as_ref(),
+        &req.user_name,
+        &req.message,
+    )
+    .await;
     (StatusCode::OK, Json(ChatResponse { reply }))
 }

@@ -120,6 +120,9 @@ mod tests {
         schedule_appointment(&conn, "bob", "2026-03-01 08:00", "Old").unwrap();
         schedule_appointment(&conn, "bob", "2026-12-01 14:00", "New").unwrap();
         let got = get_current_appointment(&conn, "bob").unwrap();
-        assert_eq!(got.reason, "New", "should return the most recent appointment");
+        assert_eq!(
+            got.reason, "New",
+            "should return the most recent appointment"
+        );
     }
 }
